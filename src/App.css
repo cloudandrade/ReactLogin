@@ -1,0 +1,8 @@
+.App {
+	background-color: #76b852;
+	display: grid;
+	min-height: 100vh;
+	min-width: 196.5vh;
+	background-repeat: no-repeat;
+	background-size: initial;
+}
