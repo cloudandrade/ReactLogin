@@ -34,12 +34,19 @@ export default function login(props) {
 	const [password, setPassword] = useState();
 	const [password2, setPassword2] = useState();
 	const [open, setOpen] = useState(false);
+	//--------------error states
+	const [emailErr, setEmailErr] = useState('');
+	const [passErr, setPassErr] = useState('');
+	const [pass2Err, setPass2Err] = useState('');
+
+	let errors = [];
 	const classes = useStyles();
 
+	//abre toast
 	const handleOpen = () => {
 		setOpen(true);
 	};
-
+	//fecha toast
 	const handleClose = (event, reason) => {
 		if (reason === 'clickaway') {
 			return;
@@ -47,40 +54,54 @@ export default function login(props) {
 
 		setOpen(false);
 	};
-
-	let errors = [];
-
+	//responsavel pela troca de pagina de login e cadastro
 	function handleChangeInternalPage() {
 		isRegister === false
 			? setIsRegister(true)
 			: setIsRegister(false);
 	}
-
+	//---------------------------------------------------
+	//responsavel pelo cadastro
 	async function handleCreateAccount(e) {
 		e.preventDefault();
 		let roles = ['user'];
 		const usuario = { name, email, password, roles };
+		errors = [];
 		await validateFields();
 		if (errors.length === 0) {
-			let response = await api.post('/auth/signup', usuario);
-			if (response.status === 200) {
-				handleChangeInternalPage();
-				handleOpen();
+			try {
+				let response = await api.post(
+					'/auth/signup',
+					usuario
+				);
+				if (response.status === 200) {
+					handleChangeInternalPage();
+					handleOpen();
+				}
+			} catch (error) {
+				console.log('Erro no console' + error);
 			}
 		}
+		//do nothing
 	}
-
+	//-----------------------------------------------------
+	//responsavel por login
 	function handleLogin(e) {
 		e.preventDefault();
 	}
-
+	//------------------------------------------------------
+	//Função validar os campos e verificar se está de acordo com as regras do sistema
 	function validateFields() {
 		let passlimit = 4;
+		setPassErr('');
+		setPass2Err('');
+		setEmailErr('');
 
 		if (password.length < passlimit) {
 			let error = {};
 			error.input = 'password';
 			error.msg = 'password must be greater than ' + passlimit;
+			setPassErr(error.msg);
 			errors.push(error);
 		}
 
@@ -88,6 +109,7 @@ export default function login(props) {
 			let error = {};
 			error.input = 'password2';
 			error.msg = 'passwords are diferent, must be equals';
+			setPass2Err(error.msg);
 			errors.push(error);
 		}
 
@@ -95,10 +117,12 @@ export default function login(props) {
 			let error = {};
 			error.input = 'email';
 			error.msg = 'must be a valid mail';
+			setEmailErr(error.msg);
 			errors.push(error);
 		}
 	}
 
+	//------------------------------------------------------------------------------
 	return (
 		<div className="login-page">
 			<Snackbar
@@ -179,6 +203,14 @@ export default function login(props) {
 							fullWidth="true"
 							label="email"
 							variant="filled"
+							error={
+								emailErr.length !== 0 ? true : false
+							}
+							helperText={
+								emailErr.length !== 0
+									? emailErr
+									: null
+							}
 							onChange={e => setEmail(e.target.value)}
 							InputProps={{ classes }}
 							style={{
@@ -188,7 +220,13 @@ export default function login(props) {
 
 						<TextField
 							fullWidth="true"
+							error={
+								passErr.length !== 0 ? true : false
+							}
 							label="Senha"
+							helperText={
+								passErr.length !== 0 ? passErr : null
+							}
 							type="password"
 							variant="filled"
 							onChange={e =>
@@ -204,6 +242,14 @@ export default function login(props) {
 							label="Confirmação de Senha"
 							type="password"
 							variant="filled"
+							error={
+								pass2Err.length !== 0 ? true : false
+							}
+							helperText={
+								pass2Err.length !== 0
+									? pass2Err
+									: null
+							}
 							onChange={e =>
 								setPassword2(e.target.value)
 							}
